@@ -17,23 +17,17 @@ class View(QWidget):
     def __init__(self):
         super().__init__()
         self.init_ui()
-        self.tabs.setTabsClosable(True)
-        self.tabs.tabBar().setMouseTracking(True)
-        self.tabs.setMovable(True)
-        self.tabs.tabCloseRequested.connect(self.close_image)
         self.images = []
         self.is_change = False
 
     def init_ui(self):
         vbox = QVBoxLayout()
         self.setLayout(vbox)
-        self.tabs = QTabWidget()
-        vbox.addWidget(self.tabs)
 
     def reset_all_image(self):
         for image in self.images:
             file_name = image.file_name
-            if file_name[-4:] == ".jpg" or file_name[-4:] == ".bmp" or file_name[:-4] == ".png":
+            if file_name[-4:] == ".jpg" or file_name[-4:] == ".bmp" or file_name[-4:] == ".png" or file_name[-4:] == ".JPG" or file_name[-4:] == ".BMP" or file_name[-4:] == ".PNG":
                 img_array = np.fromfile(file_name, np.uint8)
                 img = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
                 img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -49,7 +43,7 @@ class View(QWidget):
 
 
     def set_image(self, file_name):
-        if file_name[-4:] == ".jpg" or file_name[-4:] == ".bmp" or file_name[-4:] == ".png":
+        if file_name[-4:] == ".jpg" or file_name[-4:] == ".bmp" or file_name[-4:] == ".png" or file_name[-4:] == ".JPG" or file_name[-4:] == ".BMP" or file_name[-4:] == ".PNG":
             img_array = np.fromfile(file_name, np.uint8)
             img = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -76,7 +70,6 @@ class View(QWidget):
         self.images.append(image)
         image.set_image(img)
         image.fitInView()
-        tab_num = self.tabs.addTab(image, file_name)
 
     def mouseMoved(self, event):
         for image in self.images:
@@ -90,42 +83,23 @@ class View(QWidget):
     def wheelPressed(self, event):
         for image in self.images:
             image.wheelEventHandler(event)
+        self.SyncCenter()
 
-    def hasImage(self):
-        return self.tabs.isTabEnabled(0)
-
-    def close_image(self):
-        index = self.tabs.currentIndex()
-        self.tabs.removeTab(index)
-
-    def current_image(self):
-        if self.hasImage():
-            index = self.tabs.currentIndex()
-            return self.images[index]
+    def current_image(self):     
+        for img in self.images:
+            if img.underMouse():
+                return img
+        return None
+    
+    def SyncCenter(self):
+        if not keyboard.is_pressed("ctrl"):
+            center = self.current_image().getCenter()
+            for image in self.images:
+                if image is not self.current_image():
+                    image.setCenter(center)
 
     def keyPressEvent(self, event):
-        tab = -1
-        if(event.key() == Qt.Key_1): tab = 0
-        if(event.key() == Qt.Key_2): tab = 1
-        if(event.key() == Qt.Key_3): tab = 2
-        if(event.key() == Qt.Key_4): tab = 3
-        if(event.key() == Qt.Key_5): tab = 4
-        if(event.key() == Qt.Key_6): tab = 5
-        if(event.key() == Qt.Key_7): tab = 6
-        if(event.key() == Qt.Key_8): tab = 7
-        if(event.key() == Qt.Key_9): tab = 8
-        if(event.key() == Qt.Key_0): tab = 9
-
-        if tab is not -1:
-            if not keyboard.is_pressed("ctrl"):
-                center = self.current_image().getCenter()
-                for image in self.images:
-                    if image is not self.current_image():
-                        image.setCenter(center)
-                    
-        if(self.tabs.isTabEnabled(tab)):
-            self.tabs.setCurrentIndex(tab)
-
+        self.SyncCenter()
         QWidget.keyPressEvent(self, event)
         
 class Image(QGraphicsView):
