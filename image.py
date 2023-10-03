@@ -116,10 +116,13 @@ class View(QWidget):
         if(event.key() == Qt.Key_9): tab = 8
         if(event.key() == Qt.Key_0): tab = 9
 
-        center = self.current_image().getCenter()
-        for image in self.images:
-            image.setCenter(center)
-        
+        if tab is not -1:
+            if not keyboard.is_pressed("ctrl"):
+                center = self.current_image().getCenter()
+                for image in self.images:
+                    if image is not self.current_image():
+                        image.setCenter(center)
+                    
         if(self.tabs.isTabEnabled(tab)):
             self.tabs.setCurrentIndex(tab)
 

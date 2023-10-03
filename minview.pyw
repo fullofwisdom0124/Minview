@@ -20,7 +20,7 @@ class Main_window(QMainWindow):
 
     def init_ui(self):
         loadUi('main_window.ui', self)
-        self.setWindowTitle('ispq - ' + __version__)
+        self.setWindowTitle('minview - ' + __version__)
         self.setAcceptDrops(True)
 
         # image
